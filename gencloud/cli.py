@@ -1,6 +1,8 @@
 import argparse
 import logging
+import time
 
+from .cloudinit import CloudInit
 from .config import ConfigYAML
 from .log import set_root_logger
 from .mkuser import MkUser
@@ -24,7 +26,7 @@ class CLI:
         )
 
     def _create_args(self):
-        create_subparser_desc = "create a vm"
+        create_subparser_desc = "create a cloud-init iso"
         create_subparser_vmspec_help = "yaml file holding the vm config"
         create_subparser_userspec_help = "yaml file holding the user config"
         create_subparser_userdata_help = "cloud-init user-data file"
@@ -53,7 +55,7 @@ class CLI:
         )
 
     def _gen_args(self):
-        parser_desc = f"cloudvirt VM orchestrator ver. {pkg_version}"
+        parser_desc = f"gencloud cloud-init ISO generator ver. {pkg_version}"
         parser_d_help = "enable debugging"
 
         parser = argparse.ArgumentParser(description=parser_desc)
@@ -78,6 +80,12 @@ class CLI:
             err_msg += "you may be unable to log in to an VMs created"
             self.logger.error(err_msg)
 
+        clinit = CloudInit(config.vmspec)
+        clinit.iso_path = (
+            f"./{config.vmspec.dom_name}-{time.strftime('%Y%m%d_%H%M%S')}.iso"
+        )
+        clinit.mkiso()
+
     # - - main - - #
     def run(self):
         self._gen_args()
@@ -85,7 +93,7 @@ class CLI:
         set_root_logger(self.args.debug)
         self.logger = logging.getLogger(self.__class__.__name__)
 
-        self.logger.info("started cloudvirt ver. %s", pkg_version)
+        self.logger.info("started gencloud ver. %s", pkg_version)
 
         # - - mkuser - - #
         if self.args.command == "mkuser":
