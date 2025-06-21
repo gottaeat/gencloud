@@ -4,7 +4,6 @@ import logging
 from .config import ConfigYAML
 from .log import set_root_logger
 from .mkuser import MkUser
-from .util import ask_q
 
 from . import __version__ as pkg_version
 
@@ -95,6 +94,7 @@ class CLI:
 
         if self.args.command == "create":
             self._create()
+
 
 def run():
     c = CLI()
