@@ -1,23 +1,27 @@
 import logging
 import os
 
+from dataclasses import dataclass, field
+from typing import List
+
 import yaml
 
-from .spec import VMSpec, UserSpec
 
+@dataclass
 class VMSpec:
-    def __init__(self):
-        self.dom_name = None
-        self.sshpwauth = None
-        self.userdata = None
-        self.users = []
+    dom_name: str = None
+    sshpwauth: bool = None
+    userdata: str = None
+    users: List = field(default_factory=list)
 
+
+@dataclass
 class UserSpec:
-    def __init__(self):
-        self.name = None
-        self.password_hash = None
-        self.ssh_keys = []
-        self.sudo_god_mode = False
+    name: str = None
+    password_hash: str = None
+    ssh_keys: List = field(default_factory=list)
+    sudo_god_mode: bool = False
+
 
 class ConfigYAML:
     def __init__(self, vmspec_file, userspec_file, userdata_file):
