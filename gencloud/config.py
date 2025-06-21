@@ -1,4 +1,3 @@
-import ipaddress
 import logging
 import os
 
@@ -30,7 +29,11 @@ class ConfigYAML:
         else:
             self.logger.error("%s is not a file", self.vmspec_file)
 
-        self.logger.debug("VMSpec YAML: %s", yaml_parsed) # pylint: disable=possibly-used-before-assignment
+        # fmt: off
+        self.logger.debug(
+            "VMSpec YAML: %s", yaml_parsed # pylint: disable=possibly-used-before-assignment
+        )
+        # fmt: on
 
         # - - parse yaml - - #
         self.logger.info("parsing VMSpec() yaml")
@@ -45,11 +48,6 @@ class ConfigYAML:
 
         vmspec_must_have = [
             "dom_name",
-            "dom_mem",
-            "dom_vcpu",
-            "net",
-            "vol_pool",
-            "vol_size",
         ]
         # fmt: on
 
@@ -67,58 +65,6 @@ class ConfigYAML:
         # vmspec.dom_name
         self.vmspec.dom_name = str(vmspec_yaml["dom_name"])
 
-        # vmspec.dom_mem
-        self.vmspec.dom_mem = int(vmspec_yaml["dom_mem"])
-
-        # vmspec.dom_vcpu
-        self.vmspec.dom_vcpu = int(vmspec_yaml["dom_vcpu"])
-
-        # vmspec.net
-        self.vmspec.net = str(vmspec_yaml["net"])
-
-        # vmspec.vol_pool
-        self.vmspec.vol_pool = str(vmspec_yaml["vol_pool"])
-
-        # vmspec.vol_size
-        self.vmspec.vol_size = int(vmspec_yaml["vol_size"])
-
-        # vmspec.vol_name
-        self.vmspec.vol_name = f"{self.vmspec.dom_name}-vol.qcow2"
-
-        # vmspec.base_image
-        try:
-            if vmspec_yaml["base_image"] is None:
-                self.logger.error("base_image cannot be specified then left blank")
-            else:
-                self.vmspec.base_image = str(vmspec_yaml["base_image"])
-        except KeyError:
-            self.vmspec.base_image = "noble-server-cloudimg-amd64.img"
-
-        # vmspec.ip
-        try:
-            if vmspec_yaml["ip"] is None:
-                self.logger.error("ip cannot be specified then left blank")
-            else:
-                self.vmspec.ip = str(vmspec_yaml["ip"])
-
-        except KeyError:
-            pass
-
-        if self.vmspec.ip:
-            try:
-                if "/" in self.vmspec.ip:
-                    ipaddress.ip_network(self.vmspec.ip)
-                else:
-                    ipaddress.ip_address(self.vmspec.ip)
-            except ValueError:
-                self.logger.exception("%s is not a valid ipv4 address.", self.vmspec.ip)
-
-            ip_parts = self.vmspec.ip.split("/")
-            self.vmspec.ip = ip_parts[0]
-
-            if len(ip_parts) == 2:
-                self.vmspec.bridge_pfxlen = ip_parts[1]
-
         # vmspec.sshpwauth
         try:
             if vmspec_yaml["sshpwauth"] is None:
@@ -130,26 +76,6 @@ class ConfigYAML:
             self.vmspec.sshpwauth = vmspec_yaml["sshpwauth"]
         except KeyError:
             pass
-
-        # vmspec.gateway
-        try:
-            if vmspec_yaml["gateway"] is None:
-                self.logger.error("gateway cannot be specified then left blank")
-
-            self.vmspec.gateway = vmspec_yaml["gateway"]
-        except KeyError:
-            pass
-
-        try:
-            if vmspec_yaml["isolated_port"] is None:
-                self.logger.error("isolated_port cannot be specified then left blank")
-
-            if type(vmspec_yaml["isolated_port"]).__name__ != "bool":
-                self.logger.error("isolated port should be a bool.")
-
-            self.vmspec.isolated_port = vmspec_yaml["isolated_port"]
-        except KeyError:
-            self.logger.debug("isolated_port not set")
 
     def _parse_userspec(self):
         # - - load yaml - - #
