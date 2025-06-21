@@ -5,6 +5,19 @@ import yaml
 
 from .spec import VMSpec, UserSpec
 
+class VMSpec:
+    def __init__(self):
+        self.dom_name = None
+        self.sshpwauth = None
+        self.userdata = None
+        self.users = []
+
+class UserSpec:
+    def __init__(self):
+        self.name = None
+        self.password_hash = None
+        self.ssh_keys = []
+        self.sudo_god_mode = False
 
 class ConfigYAML:
     def __init__(self, vmspec_file, userspec_file, userdata_file):
