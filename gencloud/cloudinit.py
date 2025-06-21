@@ -16,33 +16,6 @@ class CloudInit:
         self.netconf = None
         self.iso_path = None
 
-    def _gen_netconf(self):
-        self.logger.info("generating network_config")
-
-        base = {}
-        base["network"] = {}
-
-        network = base["network"]
-        network["version"] = 2
-        network["ethernets"] = {}
-        network["ethernets"]["id0"] = {}
-        network["ethernets"]["id0"]["match"] = {"macaddress": self.vmspec.mac_addr}
-        network["ethernets"]["id0"]["addresses"] = [
-            f"{self.vmspec.ip}/{self.vmspec.bridge_pfxlen}"
-        ]
-        network["ethernets"]["id0"]["nameservers"] = {
-            "addresses": ["1.1.1.1", "1.0.0.1"]
-        }
-        network["ethernets"]["id0"]["routes"] = [
-            {
-                "to": "0.0.0.0/0",
-                "via": self.vmspec.gateway,
-                "on-link": True,
-            }
-        ]
-
-        self.netconf = yaml.dump(base, sort_keys=False).encode("utf-8")
-
     def _gen_udata(self):
         # generate user-data
         self.logger.info("generating user-data")
@@ -216,18 +189,6 @@ class CloudInit:
             rr_name="meta-data",
             joliet_path="/meta-data",
         )
-
-        # - - netplan - - #
-        if self.vmspec.ip is not None:
-            self._gen_netconf()
-
-            iso.add_fp(
-                io.BytesIO(self.netconf),
-                len(self.netconf),
-                "/NDATA.;1",
-                rr_name="network-config",
-                joliet_path="/network-config",
-            )
 
         iso.write(self.iso_path)
         iso.close()
