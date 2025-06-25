@@ -2,6 +2,7 @@ import logging
 import os
 
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import List
 
 import yaml
@@ -9,8 +10,19 @@ import yaml
 
 @dataclass
 class VMSpec:
+    # domain
     dom_name: str = None
+    dom_mem = int = None
+    dom_vcpu = int = None
+
+    # storage
+    vol_size = int = None
+    base_image = str = None
+
+    # misc
     sshpwauth: bool = None
+
+    # UserSpec
     userdata: str = None
     users: List = field(default_factory=list)
 
@@ -65,6 +77,10 @@ class ConfigYAML:
 
         vmspec_must_have = [
             "dom_name",
+            "dom_mem",
+            "dom_vcpu",
+            "vol_size",
+            "base_image"
         ]
         # fmt: on
 
@@ -81,6 +97,24 @@ class ConfigYAML:
 
         # vmspec.dom_name
         self.vmspec.dom_name = str(vmspec_yaml["dom_name"])
+
+        # vmspec.dom_mem
+        self.vmspec.dom_mem = int(vmspec_yaml["dom_mem"])
+
+        # vmspec.dom_vcpu
+        self.vmspec.dom_vcpu = int(vmspec_yaml["dom_vcpu"])
+
+        # vmspec.vol_size
+        self.vmspec.vol_size = int(vmspec_yaml["vol_size"])
+
+        # vmspec.base_image
+        self.vmspec.base_image = Path(vmspec_yaml["base_image"])
+
+        if not self.vmspec.base_image.exists():
+            self.logger.error("base image does not exist: %s", self.vmspec.base_image)
+
+        if not self.vmspec.base_image.is_file():
+            self.logger.error("base_image is not a file: %s", self.vmspec.base_image)
 
         # vmspec.sshpwauth
         try:
