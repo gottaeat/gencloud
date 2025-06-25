@@ -1,11 +1,11 @@
 import argparse
 import logging
-import time
 
 from .cloudinit import CloudInit
 from .config import ConfigYAML
 from .log import set_root_logger
 from .mkuser import MkUser
+from .utm import UTM
 
 from . import __version__ as pkg_version
 
@@ -80,10 +80,11 @@ class CLI:
             err_msg += "you may be unable to log in to an VMs created"
             self.logger.error(err_msg)
 
+        utm = UTM(config.vmspec)
+        utm.mkvm()
+
         clinit = CloudInit(config.vmspec)
-        clinit.iso_path = (
-            f"./{config.vmspec.dom_name}-{time.strftime('%Y%m%d_%H%M%S')}.iso"
-        )
+        clinit.iso_path = f"{utm.data_dir}/cidata.iso"
         clinit.mkiso()
 
     # - - main - - #
