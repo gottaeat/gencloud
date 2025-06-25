@@ -1,6 +1,7 @@
 import getpass
 import inspect
 import logging
+import subprocess
 
 
 def ask_q(query, passwd=False):
@@ -27,3 +28,11 @@ def ask_q(query, passwd=False):
     logging.StreamHandler.terminator = "\n"
 
     return response
+
+
+def runcmd(string):
+    cmdline = string.split(" ")
+
+    subprocess.run(
+        cmdline, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT
+    )
