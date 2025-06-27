@@ -1,0 +1,6 @@
+---
+services:
+  qemu-img:
+    build:
+      dockerfile: qemu-img.Dockerfile
+      context: .
