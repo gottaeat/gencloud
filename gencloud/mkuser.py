@@ -1,11 +1,11 @@
+import getpass
+import inspect
 import logging
 import time
 
 import yaml
 
 from passlib.hash import sha512_crypt
-
-from .util import ask_q
 
 
 class MkUser:
@@ -15,9 +15,29 @@ class MkUser:
         self.userspec_yaml_dict = {"userspec": []}
         self.user_names = []
 
+    def _ask_q(self, query, passwd=False):
+        # momentarily replace the streamhandler terminator so that we get rid
+        # of the ugly newlines when expecting user input
+        logging.StreamHandler.terminator = ""
+        self.logger.info("%s: ", query)
+
+        try:
+            if passwd:
+                response = getpass.getpass(prompt="", stream=None)
+            else:
+                response = str(input())
+        except (EOFError, KeyboardInterrupt):
+            print()
+            logging.StreamHandler.terminator = "\n"
+            self.logger.error("user cancelled the action, exiting")
+
+        logging.StreamHandler.terminator = "\n"
+
+        return response
+
     def _get_name(self):
         while True:
-            name = ask_q("input user name")
+            name = self._ask_q("input user name")
 
             if not name:
                 self.logger.warning("user name cannot be empty, retry")
@@ -38,8 +58,8 @@ class MkUser:
 
     def _get_passwd(self):
         while True:
-            pass1 = ask_q("input user password", passwd=True)
-            pass2 = ask_q("repeat user password", passwd=True)
+            pass1 = self._ask_q("input user password", passwd=True)
+            pass2 = self._ask_q("repeat user password", passwd=True)
 
             if pass1 == pass2:
                 if not pass1:
@@ -60,13 +80,15 @@ class MkUser:
         ssh_keys, ssh_done = [], False
 
         while ssh_done is False:
-            want_ssh = ask_q("do you want to add ssh keys? (y/n)").lower().strip(" ")
+            want_ssh = (
+                self._ask_q("do you want to add ssh keys? (y/n)").lower().strip(" ")
+            )
 
             if want_ssh == "y":
                 self.logger.info("input ssh keys, provide an empty line when done")
 
                 while True:
-                    ask_ssh = ask_q("input ssh key")
+                    ask_ssh = self._ask_q("input ssh key")
 
                     if not ask_ssh:
                         if not ssh_keys:
@@ -101,7 +123,7 @@ class MkUser:
 
     def _get_sudo_god_mode(self):
         while True:
-            consent = ask_q("do you want sudo god mode? (y/n)").lower().strip(" ")
+            consent = self._ask_q("do you want sudo god mode? (y/n)").lower().strip(" ")
 
             sudo_god_mode = (
                 True if consent == "y" else False if consent == "n" else None
@@ -138,7 +160,7 @@ class MkUser:
 
             # round 2 and onward
             while True:
-                want_more_users = ask_q("add more users? (y/n)").lower().strip()
+                want_more_users = self._ask_q("add more users? (y/n)").lower().strip()
                 if want_more_users == "y":
                     break
 
