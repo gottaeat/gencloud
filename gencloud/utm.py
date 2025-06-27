@@ -2,9 +2,8 @@ import logging
 import os
 import plistlib
 import random
+import subprocess
 import uuid
-
-from .util import runcmd
 
 
 class UTM:
@@ -29,6 +28,7 @@ class UTM:
         return str(vmmac.rstrip(":"))
 
     def _mkplist(self):
+        self.logger.info("creating config.plist")
         with open(os.path.join(self.utm_dir, "config.plist"), "wb") as f:
             plistlib.dump(
                 {
@@ -112,16 +112,50 @@ class UTM:
             )
 
     def _mkdirs(self):
+        self.logger.info("creating dirs")
         os.makedirs(self.utm_dir, exist_ok=True)
         os.makedirs(self.data_dir, exist_ok=True)
 
-    def _mkqcow(self):
-        overlay_path = os.path.join(self.data_dir, "overlay.qcow2")
+    def runcmd(self, string):
+        cmdline = string.split(" ")
+        try:
+            subprocess.run(
+                cmdline,
+                check=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+        except subprocess.CalledProcessError as e:
+            warn_msg = [line for line in f"{e.stderr}".split('\n') if line]
+            for line in warn_msg:
+                self.logger.warning(line)
+            self.logger.error("'%s' failed to execute", string)
 
-        runcmd(
-            f"qemu-img convert -f qcow2 -O qcow2 {self.vmspec.base_image} {overlay_path}"
+    def _mkqcow(self):
+        overlay_dir = os.path.abspath(self.data_dir)
+        base_filename = os.path.basename(self.vmspec.base_image)
+
+        original_cwd = os.getcwd()
+        os.chdir(os.path.join(os.path.dirname(__file__), "static"))
+
+        self.logger.info("creating qcow2")
+        self.runcmd(
+            f"docker compose run --rm --build "
+            f"-v {self.vmspec.base_image}:/source/{base_filename} "
+            f"-v {overlay_dir}:/overlay "
+            f"qemu-img convert -f qcow2 -O qcow2 "
+            f"/source/{base_filename} /overlay/overlay.qcow2"
         )
-        runcmd(f"qemu-img resize {overlay_path} {self.vmspec.vol_size}G")
+
+        self.logger.info("resizing qcow2 to %sG", self.vmspec.vol_size)
+        self.runcmd(
+            f"docker compose run --rm --build "
+            f"-v {overlay_dir}:/overlay "
+            f"qemu-img resize /overlay/overlay.qcow2 {self.vmspec.vol_size}G"
+        )
+
+        os.chdir(original_cwd)
 
     def mkvm(self):
         self._mkdirs()
