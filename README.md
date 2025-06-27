@@ -8,13 +8,22 @@ docker is necessary to call `qemu-imq` without having to install the full `qemu`
 suite via `brew`. `picocom` is for providing serial console access when the user
 doesn't enable ssh key access for a user they create.
 ```sh
+# pull deps
 brew install docker utm --cask
 brew install picocom
 
+# install release
 pip install genutm
 
+# pull latest debian 12 qcow2
+curl -L \
+    https://cdimage.debian.org/images/cloud/bookworm/latest/debian-12-generic-arm64.qcow2 \
+    -o $HOME/debian-12-generic-arm64.qcow2
+
+# create userspec
 genutm mkuser
 
+# create vmspec
 cat << EOF > vm.yml
 ---
 vmspec:
@@ -22,13 +31,39 @@ vmspec:
   dom_mem: 2048
   dom_vcpu: 2
   vol_size: 10
-  base_image: /Users/user/debian-12-generic-arm64.qcow2
+  base_image: $HOME/debian-12-generic-arm64.qcow2
   sshpwauth: yes
 EOF
 
-gencloud create vm.yml --users userspec-*.yml
+# create arbitrary user-data additions (optional)
+cat << EOF > userdata.yml
+package_update: true
+package_upgrade: true
 
+packages:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gnupg
+
+write_files:
+  - path: /tmp/hello.txt
+    content: |
+      hello world!
+
+runcmd:
+  - systemctl mask iptables
+  - systemctl enable --now nftables
+EOF
+
+# create cidata.iso and utm bundle
+gencloud create vm.yml --users userspec-*.yml --userdata userdata.yml
+
+# register and start vm
 open debian12arm1.utm
+
+# hook up to serial
+picocom /dev/ttys006
 ```
 
 ## configuration
