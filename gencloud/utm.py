@@ -127,7 +127,7 @@ class UTM:
                 text=True,
             )
         except subprocess.CalledProcessError as e:
-            warn_msg = [line for line in f"{e.stderr}".split('\n') if line]
+            warn_msg = [line for line in f"{e.stderr}".split("\n") if line]
             for line in warn_msg:
                 self.logger.warning(line)
             self.logger.error("'%s' failed to execute", string)
