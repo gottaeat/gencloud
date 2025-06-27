@@ -237,7 +237,7 @@ class ConfigYAML:
     def _parse_userdata(self):
         # - - load yaml - - #
         if not self.userdata_file:
-            return self.logger.info("no arbitrary user-data was provided")
+            return self.logger.warning("no arbitrary user-data was provided")
 
         self.logger.info("loading UserSpec() yaml")
 
