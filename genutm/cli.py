@@ -55,7 +55,9 @@ class CLI:
         )
 
     def _gen_args(self):
-        parser_desc = f"genutm UTM bundle and cloud-init ISO generator ver. {pkg_version}"
+        parser_desc = (
+            f"genutm UTM bundle and cloud-init ISO generator ver. {pkg_version}"
+        )
         parser_d_help = "enable debugging"
 
         parser = argparse.ArgumentParser(description=parser_desc)
