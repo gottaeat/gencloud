@@ -3,7 +3,7 @@ requires = ["flit_core >=3.2,<4"]
 build-backend = "flit_core.buildapi"
 
 [project]
-name = "gencloud"
+name = "genutm"
 authors = [
     {name = "gottaeat", email = "eateing@loggedin.net"}
 ]
@@ -24,7 +24,7 @@ dependencies = [
 ]
 
 [project.urls]
-Home = "https://github.com/gottaeat/gencloud"
+Home = "https://github.com/gottaeat/genutm"
 
 [project.scripts]
-gencloud = "gencloud.cli:run"
+genutm = "genutm.cli:run"
