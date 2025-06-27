@@ -55,7 +55,7 @@ class CLI:
         )
 
     def _gen_args(self):
-        parser_desc = f"gencloud cloud-init ISO generator ver. {pkg_version}"
+        parser_desc = f"genutm UTM bundle and cloud-init ISO generator ver. {pkg_version}"
         parser_d_help = "enable debugging"
 
         parser = argparse.ArgumentParser(description=parser_desc)
@@ -94,7 +94,7 @@ class CLI:
         set_root_logger(self.args.debug)
         self.logger = logging.getLogger(self.__class__.__name__)
 
-        self.logger.info("started gencloud ver. %s", pkg_version)
+        self.logger.info("started genutm ver. %s", pkg_version)
 
         # - - mkuser - - #
         if self.args.command == "mkuser":
