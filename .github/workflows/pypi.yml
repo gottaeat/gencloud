@@ -13,7 +13,7 @@ jobs:
 
     environment:
       name: pypi
-      url: https://pypi.org/p/gencloud
+      url: https://pypi.org/p/genutm
 
     permissions:
       id-token: write
