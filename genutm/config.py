@@ -126,7 +126,7 @@ class ConfigYAML:
 
             self.vmspec.sshpwauth = vmspec_yaml["sshpwauth"]
         except KeyError:
-            pass
+            self.vmspec.sshpwauth = False
 
     def _parse_userspec(self):
         # - - load yaml - - #
